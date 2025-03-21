@@ -1,0 +1,74 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<div>
+    <label>Username:</label>
+    <input type="text" @bind="Username" />
+</div>
+<div>
+    <label>Email:</label>
+    <input type="email" @bind="Email" />
+</div>
+<button @onclick="AuthenticateUser">Login</button>
+
+@if (LoginMessage != null)
+{
+    <p>@LoginMessage</p>
+}
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
+@code {
+    private string Username { get; set; } = string.Empty;
+    private string Email { get; set; } = string.Empty;
+    private string? LoginMessage;
+
+    private HttpClient httpClient = new HttpClient();
+
+    private async Task AuthenticateUser()
+    {
+        try
+        {
+            // Fetch users from API
+            var users = await httpClient.GetFromJsonAsync<List<User>>("https://jsonplaceholder.typicode.com/users");
+
+            // Check if the entered username and email match a user
+            var user = users?.FirstOrDefault(u => u.username == Username && u.email == Email);
+
+            if (user != null)
+            {
+                LoginMessage = $"Welcome, {user.name}!";
+            }
+            else
+            {
+                LoginMessage = "Invalid username or email.";
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginMessage = $"Error during authentication: {ex.Message}";
+        }
+    }
+
+    public class User
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string username { get; set; }
+        public string email { get; set; }
+    }
+}

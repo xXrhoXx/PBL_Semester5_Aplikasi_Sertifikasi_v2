@@ -1,0 +1,59 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+<p>Welcome to your new app.</p>
+<button class="btn btn-primary" @onclick="FetchData">get data</button>
+<button class="btn btn-primary" @onclick="PostData">post data</button>
+
+@if (data != null)
+{
+    <h3>Tittle: @data.title</h3>
+    <p role="status">id: @data.id</p>
+    <p>body: @data.body</p>
+}
+
+@code {
+    public Data data;
+    public HttpClient httpClient = new HttpClient();
+
+    public async Task FetchData()
+    {
+        data = await httpClient.GetFromJsonAsync<Data>("https://jsonplaceholder.typicode.com/posts/1");
+    }
+    public async Task PostData()
+    {
+        var newData = new Data
+            {
+                userId = 1,
+                id = 101, // Optional, depending on the API implementation
+                title = "New Post Title",
+                body = "This is the content of the new post."
+            };
+
+        var response = await httpClient.PostAsJsonAsync("https://jsonplaceholder.typicode.com/posts", newData);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var createdData = await response.Content.ReadFromJsonAsync<Data>();
+            Console.WriteLine($"Post successful! New data ID: {createdData?.id} status code: {response.StatusCode}");
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Raw JSON response: {jsonResponse}");
+        }
+        else
+        {
+            Console.WriteLine($"Post failed with status code: {response.StatusCode}");
+        }
+    }
+
+    public class Data()
+    {
+        public int userId { get; set; }
+        public int id { get; set; }
+        public string title { get; set; }
+        public string body { get; set; }
+    }
+}
