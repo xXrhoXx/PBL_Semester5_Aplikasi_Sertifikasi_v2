@@ -1,0 +1,27 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "FrontEnd\\MauiAccessorApp\\MauiAccessorApp.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

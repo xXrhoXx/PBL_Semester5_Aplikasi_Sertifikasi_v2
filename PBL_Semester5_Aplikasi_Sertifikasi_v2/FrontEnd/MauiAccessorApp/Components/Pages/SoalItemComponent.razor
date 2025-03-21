@@ -1,0 +1,92 @@
+﻿@page "/soal-item-component/{IdSoal:int}"
+@using Microsoft.AspNetCore.Authorization
+@using MauiAccessorApp.Models.Entities
+@inject NavigationManager NavigationManager;
+@attribute [Authorize]
+
+<PageTitle>Questions</PageTitle>
+
+<h3>Soal</h3>
+
+@if (pertanyaan is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>daftar pertanyaan</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(int i = 0; i < pertanyaan.Count; i++)
+            {
+                <PertanyaanItemComponent pertanyaan="pertanyaan[i]" index="i+1"/>
+            }
+
+            @foreach (var item in pertanyaan)
+            {
+                <!--PertanyaanItemComponent pertanyaan="item"/-->
+            }
+        </tbody>
+    </table>
+
+    <td>
+        <button class="btn btn-primary" @onclick="TambahPertanyaan">Tambah Pertanyaan</button>
+        <!--button class="btn btn-secondary" onclick="DisableEdit">Cancel</--button-->
+    </td>
+}
+
+@code {
+    [Parameter]
+    public int IdSoal { get; set; }
+    public List<Pertanyaan> pertanyaan = new List<Pertanyaan>();
+
+    public HttpClient httpClient = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // You can now use the IdSoal parameter in your logic.
+        //Console.WriteLine($"Received ID: {IdSoal}");
+        //pertanyaan = await httpClient!.GetFromJsonAsync<List<Pertanyaan>>($"http://localhost:5017/api/Pertanyaan/by-questions/{IdSoal}");
+
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/Pertanyaan/by-questions/{IdSoal}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            pertanyaan = await response.Content.ReadFromJsonAsync<List<Pertanyaan>>();
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for pertanyaan
+            pertanyaan = new List<Pertanyaan>();
+        }
+    }
+
+    private async Task TambahPertanyaan()
+    {
+        var pertanyaanRequest = new
+        {
+            Id = 0,
+            Text = "string",
+            QuestionsId = IdSoal   
+        };
+
+        var response = await httpClient!.PostAsJsonAsync("http://localhost:5017/api/Pertanyaan", pertanyaanRequest);
+        //Console.WriteLine(response.IsSuccessStatusCode);
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+    }
+}

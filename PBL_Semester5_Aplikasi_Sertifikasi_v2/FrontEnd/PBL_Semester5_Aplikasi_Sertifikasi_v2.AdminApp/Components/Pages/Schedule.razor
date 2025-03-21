@@ -1,0 +1,123 @@
+﻿@page "/schedule"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@using Models.Entities
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Schedule</PageTitle>
+
+@if (schedules is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <h3>Add Schedule</h3>
+                    <form @onsubmit="CheckAndAddSchedule">
+                        <div class="mb-3">
+                            <label for="scheduleDate" class="form-label">Date and Time</label>
+                            <input type="datetime-local" id="scheduleDate" class="form-control" @bind="schedule.Date" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="questionId" class="form-label">Question Id</label>
+                            <input type="text" id="questionId" class="form-control" @bind="schedule.QuestionsId" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessedId" class="form-label">Accessed Id</label>
+                            <input type="text" id="accessedId" class="form-control" @bind="schedule.AccessedId" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessorId" class="form-label">Accessor Id</label>
+                            <input type="text" id="accessorId" class="form-control" @bind="schedule.AccessorID" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Scedule</button>
+                    </form>
+                </th>
+            </tr>
+            <tr>
+                <th>Schedules</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @for (int i = 0; i < schedules.Count; i++)
+                    {
+                        <ScheduleItemComponent index="i+1" scheduleData="schedules[i]" />
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+}
+
+@code {
+    public List<AssessmentSchedule> schedules = new List<AssessmentSchedule>();
+
+    public AssessmentSchedule schedule = new AssessmentSchedule()
+    {
+        Date = DateTime.Now
+    };
+
+    public HttpClient httpClient = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var responseJadwal = await httpClient!.GetAsync($"http://localhost:5017/api/Jadwal");
+
+        if (responseJadwal.IsSuccessStatusCode)
+        {
+            schedules = await responseJadwal.Content.ReadFromJsonAsync<List<AssessmentSchedule>>();
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {responseJadwal.StatusCode}");
+            // Example: Show an error message to the user or set a default value for accessors
+            schedules = new List<AssessmentSchedule>();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+
+    private async Task CheckAndAddSchedule()
+    {
+        var existingSchedule = await httpClient.GetFromJsonAsync<List<AssessmentSchedule>>("http://localhost:5017/api/Jadwal");
+        if (existingSchedule != null && !existingSchedule.Any(a => a.AccessedId == schedule.AccessedId && a.Date == schedule.Date))
+        {
+            await TambahJadwal();
+        }
+        else
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "assessi tidak dapat menambahkan jadwal pada waktu yang sama");
+        }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+    private async Task TambahJadwal()
+    {
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/Jadwal", schedule);
+        if (response.IsSuccessStatusCode)
+        {
+            schedules.Add(schedule);
+            schedule = new AssessmentSchedule(); // Reset the form
+        }
+        else
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Failed to add schedule.");
+        }
+    }
+}

@@ -1,0 +1,301 @@
+﻿@page "/reports"
+@using Models.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject IJSRuntime js;
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>Assessment Questions</PageTitle>
+
+<h1>Reports</h1>
+
+@if (JawabanPesertaAssesi != null && JawabanPesertaAssesi.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="border">Soal</th>
+                <th style="border">Assessor</th>
+                <th style="border">Peserta Assessi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in JawabanPesertaAssesi)
+            {
+                <tr style="background-color: yellow;">
+                    <td>@item.titleSoal</td>
+                    <td>@item.namaAssessor</td>
+                    <td>@item.namaPesertaAssessi</td>
+                </tr>
+                @foreach (var jawabanPesertaAssesi in item.jawabanTerverifikasis)
+                {
+                    <tr>
+                        <td>
+                            <b>Pertanyaan:</b>
+                            <br />
+                            <i>@jawabanPesertaAssesi.question</i>
+                            <br />
+
+                            <b>Jawaban:</b>
+                            <br />
+                            <i>@jawabanPesertaAssesi.answer</i>
+                        </td>
+
+
+                        <td>
+                            <b>Rekomendasi:</b>
+                            <br />
+                            <i>@jawabanPesertaAssesi.Rekomendasi</i>
+                        </td>
+
+                        <td>
+                            <b>Umpan Balik Untuk Assessi:</b>
+                            <br />
+                            <i>@jawabanPesertaAssesi.Tanggapan</i>
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => PrintPDF(item.titleSoal, item.namaAssessor, item.namaPesertaAssessi, item.jawabanTerverifikasis)">
+                            Generate PDF
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No data available</p>
+}
+
+<script src="js/site.js"></script>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    public List<EntitasSoalPesertaAccessor> JawabanPesertaAssesi = new List<EntitasSoalPesertaAccessor>();
+    public HttpClient httpClient = new HttpClient();
+    public string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var authenticationState = await authenticationStateTask;
+
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/JawabanTerverifikasi/by-accessor/{authenticationState.User.FindFirst("Id")?.Value}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var placeholderJawabanTerverifikasi = await response.Content.ReadFromJsonAsync<List<JawabanTerverifikasi>>();
+
+            foreach (var item in placeholderJawabanTerverifikasi)
+            {
+                var a = new EntitasSoalPesertaAccessor
+                    {
+                        idSoal = item.questionsId,
+                        titleSoal = await GetTitleSoalByIdAsync(item.questionsId),
+                        idPesertaAssessi = item.accessedId,
+                        namaPesertaAssessi = await GetNamaPesertaByIdAsync(item.accessedId),
+                        idAssessor = item.accessorId,
+                        namaAssessor = await GetNamaAssessorByIdAsync(item.accessorId),
+                        assessmentSessionId = item.AssessmentSessionId
+                    };
+
+                var existingItem = JawabanPesertaAssesi.FirstOrDefault(x => x.Equals(a));
+                if (existingItem == null)
+                {
+                    // Add new item if it doesn't exist
+                    a.jawabanTerverifikasis.Add(item);
+                    JawabanPesertaAssesi.Add(a);
+                }
+                else
+                {
+                    // Add to the existing item's jawabanTerverifikasis list
+                    existingItem.jawabanTerverifikasis.Add(item);
+                }
+            }
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for pertanyaan
+            JawabanPesertaAssesi = new List<EntitasSoalPesertaAccessor>();
+        }
+    }
+
+    private async Task<string> GetNamaPesertaByIdAsync(int id)
+    {
+        string namaPeserta = string.Empty;
+
+        try
+        {
+            var response = await httpClient!.GetAsync($"http://localhost:5017/api/Accessed/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var assessor = await response.Content.ReadFromJsonAsync<Accessed>();
+                if (assessor != null)
+                {
+                    // Assuming Pertanyaan has a property for the participant's name
+                    namaPeserta = assessor.Nama ?? "Unknown Participant";
+                }
+            }
+            else
+            {
+                // Log or handle the error
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions such as network errors
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+
+        return namaPeserta;
+    }
+    private async Task<string> GetNamaAssessorByIdAsync(int id)
+    {
+        string namaAssessor = string.Empty;
+
+        try
+        {
+            var response = await httpClient!.GetAsync($"http://localhost:5017/api/Accessor/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var peserta = await response.Content.ReadFromJsonAsync<Accessor>();
+                if (peserta != null)
+                {
+                    // Assuming Pertanyaan has a property for the participant's name
+                    namaAssessor = peserta.Nama ?? "Unknown Participant";
+                }
+            }
+            else
+            {
+                // Log or handle the error
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions such as network errors
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+
+        return namaAssessor;
+    }
+    private async Task<string> GetTitleSoalByIdAsync(int id)
+    {
+        string titleSoal = string.Empty;
+
+        try
+        {
+            var response = await httpClient!.GetAsync($"http://localhost:5017/api/Soal/by-id/{id}");
+            if (response.IsSuccessStatusCode)
+            {
+                var soal = await response.Content.ReadFromJsonAsync<Soal>();
+                if (soal != null)
+                {
+                    // Assuming Pertanyaan has a property for the participant's name
+                    titleSoal = soal.Title ?? "Unknown Participant";
+                }
+            }
+            else
+            {
+                // Log or handle the error
+                Console.WriteLine($"Error: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions such as network errors
+            Console.WriteLine($"Exception: {ex.Message}");
+        }
+
+        return titleSoal;
+    }
+    private async Task PrintPDF(string titleSoal, string namaAssessor, string namaPesertaAssessi, List<JawabanTerverifikasi> jawabanTerverifikasis)
+    {
+        // Define a memory stream to hold the PDF
+        using var stream = new MemoryStream();
+        var writer = new iText.Kernel.Pdf.PdfWriter(stream);
+        var pdf = new iText.Kernel.Pdf.PdfDocument(writer);
+        var document = new iText.Layout.Document(pdf);
+
+        // Add title
+        document.Add(new iText.Layout.Element.Paragraph($"Assessment Report: {titleSoal}")
+            .SetFontSize(18)
+            .SimulateBold()
+            .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+
+        // Add Assessor and Participant details
+        document.Add(new iText.Layout.Element.Paragraph($"Assessor: {namaAssessor}\nParticipant: {namaPesertaAssessi}")
+            .SetFontSize(12)
+            .SetMarginBottom(20));
+
+        // Add verified answers
+        foreach (var jawaban in jawabanTerverifikasis)
+        {
+            document.Add(new iText.Layout.Element.Paragraph($"Question: {jawaban.question}")
+                .SimulateBold()
+                .SetFontSize(12));
+            document.Add(new iText.Layout.Element.Paragraph($"Answer: {jawaban.answer}"));
+            document.Add(new iText.Layout.Element.Paragraph($"Recommendation: {jawaban.Rekomendasi}"));
+            document.Add(new iText.Layout.Element.Paragraph($"Feedback: {jawaban.Tanggapan}")
+                .SetMarginBottom(10));
+        }
+
+        // Close document
+        document.Close();
+
+        // Download the PDF (Blazor-specific JS interop)
+        var pdfBytes = stream.ToArray();
+        await js.InvokeVoidAsync("downloadFile", Convert.ToBase64String(pdfBytes), "AssessmentReport.pdf", "application/pdf");
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error generating PDF: {ex.Message}");
+        }
+    }
+
+
+    public class EntitasSoalPesertaAccessor
+    {
+        public int idSoal = 0;
+        public string titleSoal = "";
+        public int idPesertaAssessi = 0;
+        public string namaPesertaAssessi = "";
+        public int idAssessor = 0;
+        public string namaAssessor = "";
+        public int assessmentSessionId = 0;
+        public List<JawabanTerverifikasi> jawabanTerverifikasis = new List<JawabanTerverifikasi>();
+        public HttpClient httpClient = new HttpClient();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is EntitasSoalPesertaAccessor other)
+            {
+                /*return idSoal == other.idSoal &&
+                       idPesertaAssessi == other.idPesertaAssessi &&
+                       idAssessor == other.idAssessor;*/
+                return assessmentSessionId == other.assessmentSessionId;
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(idSoal, idPesertaAssessi, idAssessor);
+        }
+    }
+}

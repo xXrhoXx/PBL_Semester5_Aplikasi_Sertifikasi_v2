@@ -1,0 +1,76 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.Api", "Api\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api.csproj", "{987CD770-0BE3-4013-B3EE-CA2367953003}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Api", "Api", "{6F7AE818-AF14-49A3-878D-CAFFB62854A5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrontEnd", "FrontEnd", "{2A7839D9-252C-4463-81B9-965BBA120AD7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.ApiClient", "Api\PBL_Semester5_Aplikasi_Sertifikasi_v2.ApiClient\PBL_Semester5_Aplikasi_Sertifikasi_v2.ApiClient.csproj", "{0B767F38-A175-44B6-BE9C-036A9F01968F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.app", "FrontEnd\PBL_Semester5_Aplikasi_Sertifikasi_v2.app\PBL_Semester5_Aplikasi_Sertifikasi_v2.app.csproj", "{7E402078-0A27-4378-86FD-BB1BBEB5D853}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp", "FrontEnd\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp.csproj", "{C0F8198F-CF0D-4561-8192-812DC2A77827}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp", "FrontEnd\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp.csproj", "{CE403713-97F1-49D1-B588-F31AB6AA28B4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp", "FrontEnd\PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp\PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp.csproj", "{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MauiAccessorApp", "FrontEnd\MauiAccessorApp\MauiAccessorApp.csproj", "{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{987CD770-0BE3-4013-B3EE-CA2367953003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{987CD770-0BE3-4013-B3EE-CA2367953003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{987CD770-0BE3-4013-B3EE-CA2367953003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{987CD770-0BE3-4013-B3EE-CA2367953003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B767F38-A175-44B6-BE9C-036A9F01968F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B767F38-A175-44B6-BE9C-036A9F01968F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B767F38-A175-44B6-BE9C-036A9F01968F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B767F38-A175-44B6-BE9C-036A9F01968F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E402078-0A27-4378-86FD-BB1BBEB5D853}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E402078-0A27-4378-86FD-BB1BBEB5D853}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E402078-0A27-4378-86FD-BB1BBEB5D853}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E402078-0A27-4378-86FD-BB1BBEB5D853}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0F8198F-CF0D-4561-8192-812DC2A77827}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0F8198F-CF0D-4561-8192-812DC2A77827}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0F8198F-CF0D-4561-8192-812DC2A77827}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0F8198F-CF0D-4561-8192-812DC2A77827}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE403713-97F1-49D1-B588-F31AB6AA28B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE403713-97F1-49D1-B588-F31AB6AA28B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE403713-97F1-49D1-B588-F31AB6AA28B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE403713-97F1-49D1-B588-F31AB6AA28B4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17}.Release|Any CPU.Deploy.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{987CD770-0BE3-4013-B3EE-CA2367953003} = {6F7AE818-AF14-49A3-878D-CAFFB62854A5}
+		{0B767F38-A175-44B6-BE9C-036A9F01968F} = {6F7AE818-AF14-49A3-878D-CAFFB62854A5}
+		{7E402078-0A27-4378-86FD-BB1BBEB5D853} = {2A7839D9-252C-4463-81B9-965BBA120AD7}
+		{C0F8198F-CF0D-4561-8192-812DC2A77827} = {2A7839D9-252C-4463-81B9-965BBA120AD7}
+		{CE403713-97F1-49D1-B588-F31AB6AA28B4} = {2A7839D9-252C-4463-81B9-965BBA120AD7}
+		{4205AA8C-05CF-4C17-AAD1-A0BA0B626DE6} = {2A7839D9-252C-4463-81B9-965BBA120AD7}
+		{3A20A0CC-552C-4689-8FF5-02BD93AF4C17} = {2A7839D9-252C-4463-81B9-965BBA120AD7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {134B2AD4-282A-48F2-91E9-314ADD7E6456}
+	EndGlobalSection
+EndGlobal

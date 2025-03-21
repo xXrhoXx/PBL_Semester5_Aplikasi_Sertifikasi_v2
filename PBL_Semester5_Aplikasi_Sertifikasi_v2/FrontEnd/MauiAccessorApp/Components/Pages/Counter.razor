@@ -1,0 +1,71 @@
+﻿@page "/counter"
+@using Models.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject IJSRuntime js;
+@attribute [Authorize]
+
+<PageTitle>Assessment Questions</PageTitle>
+
+<h1>Assessment Questions</h1>
+
+@if (soal != null && soal.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in soal)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Title</td>
+                    <td>@item.Description</td>
+                    <td> <a class="fw-bolder" href="/soal-item-component/@item.Id">press to view details</a> </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No data available</p>
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    public List<Soal> soal;
+    public HttpClient httpClient = new HttpClient();
+    public string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var authenticationState = await authenticationStateTask;
+
+        //soal = await httpClient!.GetFromJsonAsync<List<Soal>>($"http://localhost:5017/api/Soal/by-accessor/{authenticationState.User.FindFirst("Id")?.Value}");
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/Soal/by-accessor/{authenticationState.User.FindFirst("Id")?.Value}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            soal = await response.Content.ReadFromJsonAsync<List<Soal>>();
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for pertanyaan
+            soal = new List<Soal>();
+        }
+    }
+}

@@ -1,0 +1,125 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AccessedController.cs",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs",
+              "RelativeDocumentMoniker": "Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs",
+              "RelativeToolTip": "Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Controllers\\AccessedController.cs",
+              "ViewState": "AgIAACkAAAAAAAAAAAAIwF4AAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-14T01:09:39.502Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Counter.razor",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor",
+              "RelativeToolTip": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Counter.razor",
+              "ViewState": "AgIAAEsAAAAAAAAAAABBwGAAAADHAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-03-14T00:59:51.634Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Home.razor",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor",
+              "RelativeToolTip": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Home.razor",
+              "ViewState": "AgIAABwAAAAAAAAAAABBwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-03-14T00:59:42.311Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Accessed.cs",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs",
+              "RelativeDocumentMoniker": "Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs",
+              "RelativeToolTip": "Api\\PBL_Semester5_Aplikasi_Sertifikasi_v2.Api\\Domain\\Entities\\Accessed.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-02-25T18:03:43.078Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "DaftarJawabanPesertaAssessiItemComponent.razor",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor",
+              "RelativeToolTip": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\DaftarJawabanPesertaAssessiItemComponent.razor",
+              "ViewState": "AgIAAG0AAAAAAAAAAABhwAwAAAA3AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-01-24T03:45:47.419Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Weather.razor",
+              "DocumentMoniker": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor",
+              "RelativeDocumentMoniker": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor",
+              "ToolTip": "C:\\Users\\rhodes\\source\\repos\\PBL_Semester5_Aplikasi_Sertifikasi_v2\\FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor",
+              "RelativeToolTip": "FrontEnd\\PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp\\Components\\Pages\\Weather.razor",
+              "ViewState": "AgIAABwAAAAAAAAAAABhwCoAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2025-01-24T02:51:07.641Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

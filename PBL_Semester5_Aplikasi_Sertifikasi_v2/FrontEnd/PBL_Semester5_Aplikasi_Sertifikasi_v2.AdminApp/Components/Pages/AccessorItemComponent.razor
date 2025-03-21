@@ -1,0 +1,101 @@
+﻿@using PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp.Models.Entities
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager;
+<!--h3>AccessorItemComponent</h3--->
+
+@if (accessorData is not null)
+{
+    @if (!OnEdit)
+    {
+        <tr>
+            <th style="width: 10%;">No</th>
+            <th style="width: 10%;">ID</th>
+            <th style="width: 20%;">Nama</th>
+            <th style="width: 45%;">Email</th>
+            <th style="width: 25%;">Alamat</th>
+        </tr>
+        <tr>
+            <td><b>@index.</b></td>
+            <td>@accessorData.Id</td>
+            <td>@accessorData.Nama</td>
+            <td>@accessorData.Email</td>
+            <td>@accessorData.Alamat</td>
+            <td style="width: 25%; text-align: center;">
+                <button class="btn btn-primary" @onclick="EnableEdit">Enable Edit</button>
+                <button class="btn btn-danger" @onclick="Delete">Delete</button>
+            </td>
+        </tr>
+    }
+    else
+    {
+        <tr>
+            <th style="width: 10%;">Nama</th>
+            <th style="width: 20%;">Email</th>
+            <th style="width: 45%;">Alamat</th>
+            <th style="width: 25%;">Password</th>
+            <th style="width: 10%;"></th>
+        </tr>
+        <tr>
+            <td>
+                <input @bind="accessorData.Nama" class="form-control form-control-lg" style="font-size: 1rem; height: 2.5rem;" />
+            </td>
+            <td>
+                <input @bind="accessorData.Email" class="form-control form-control-lg" style="font-size: 1rem; height: 2.5rem;" />
+            </td>
+            <td>
+                <input @bind="accessorData.Alamat" class="form-control form-control-lg" style="font-size: 1rem; height: 2.5rem;" />
+            </td>
+            <td>
+                <input @bind="accessorData.Password" class="form-control form-control-lg" style="font-size: 1rem; height: 2.5rem;" />
+            </td>
+            <td>
+                <button class="btn btn-success" @onclick="Update">Save Changes</button>
+                <button class="btn btn-secondary" @onclick="DisableEdit">Cancel</button>
+            </td>
+        </tr>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public int index { get; set; }
+
+    [Parameter]
+    public Accessor accessorData { get; set; }
+
+    [Parameter]
+    public bool OnEdit { get; set; } = false;
+
+    public HttpClient httpClient = new HttpClient();
+
+
+    private async Task EnableEdit()
+    {
+        OnEdit = true;
+    }
+
+    private async Task DisableEdit()
+    {
+        OnEdit = false;
+    }
+
+    private async Task Update()
+    {
+        var response = await httpClient!.PutAsJsonAsync<Accessor>($"http://localhost:5017/api/Accessor", accessorData);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Reload the page
+    }
+
+    private async Task Delete()
+    {
+        // Trigger a JavaScript confirmation dialog
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
+
+        if (confirmed)
+        {
+            // Call the Delete method if confirmed
+            var response = await httpClient.DeleteAsync($"http://localhost:5017/api/Accessor/{accessorData.Id}");
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Reload the page
+        }
+    }
+}

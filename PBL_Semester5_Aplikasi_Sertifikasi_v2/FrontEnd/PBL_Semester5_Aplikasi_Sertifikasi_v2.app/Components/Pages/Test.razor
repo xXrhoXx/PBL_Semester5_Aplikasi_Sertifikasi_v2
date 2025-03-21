@@ -1,0 +1,53 @@
+﻿@page "/test"
+@rendermode InteractiveServer
+
+<h3>Test</h3>
+<PageTitle>Home</PageTitle>
+
+<button class="btn btn-primary" @onclick="FetchData">get data</button>
+<!-- <button class="btn btn-primary" @onclick="PostData">post data</button>-->
+@if (accessors != null && accessors.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>Alamat</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in accessors)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Nama</td>
+                    <td>@item.Alamat</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No data available</p>
+}
+
+@using Models.Entities;
+@code {
+    public List<Accessor> accessors;
+    public HttpClient httpClient = new HttpClient();
+
+    public async Task FetchData()
+    {
+        try
+        {
+            // Fetch the list of data
+            accessors = await httpClient.GetFromJsonAsync<List<Accessor>>("http://localhost:5017/api/Accessor");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+        }
+    }
+}

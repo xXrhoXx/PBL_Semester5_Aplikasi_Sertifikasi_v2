@@ -1,0 +1,169 @@
+﻿@page "/weather"
+@using Microsoft.AspNetCore.Authorization
+@using Models.Entities
+@inject NavigationManager NavigationManager;
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+<PageTitle>Assession Assignment</PageTitle>
+
+<h3>Soal</h3>
+<p>daftar soal</p>
+@if (soal is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">no</th>
+                <th style="width: 5%;">Id</th>
+                <th>Judul</th>
+                <th>Deskripsi</th>
+                <th>Id Accessor</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < soal.Count; i++)
+            {
+                <tr>
+                    <td style="width: 5%;">@(i + 1)</td>
+                    <td style ="width: 5%;">@soal[i].Id</td>
+                    <td>@soal[i].Title</td>
+                    <td>@soal[i].Description</td>
+                    <th>@soal[i].AccessorId</th>
+                </tr>
+            }
+
+            <!--foreach (var item in soal)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Title</td>
+                    <td>@item.Description</td>
+                    <th>@item.AccessorId</th>
+                </tr>
+            }-->
+        </tbody>
+    </table>
+
+    <!--td>
+        <button class="btn btn-primary" @onclick="TambahSoal">Tambah Soal</button>
+    </td-->
+    <div class="container mt-3">
+        <h3>TAMBAH SOAL</h3>
+        <form @onsubmit="TambahSoal">
+            <div class="mb-3">
+                <label for="title" class="form-label">Title</label>
+                <input type="text" id="title" class="form-control" @bind="newSoal.Title" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" class="form-control" @bind="newSoal.Description" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="accessorId" class="form-label">Accessor ID</label>
+                <input type="number" id="accessorId" class="form-control" @bind="newSoal.AccessorId" min="1" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Tambah Soal</button>
+        </form>
+        <h3>DELETE SOAL</h3>
+        <div>
+            <label for="soalId">Enter Soal ID:</label>
+            <input id="soalId" @bind="soalId" type="number" placeholder="Enter ID" />
+            <button class="btn btn-primary" @onclick="DeleteSoal">Delete Soal</button>
+        </div>
+    </div>
+}
+
+@code {
+    public List<Soal> soal = new List<Soal>();
+
+    public HttpClient httpClient = new HttpClient();
+
+    public string textPertanyaan = "";
+    private int soalId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/Soal");
+
+        if (response.IsSuccessStatusCode)
+        {
+            soal = await response.Content.ReadFromJsonAsync<List<Soal>>();
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for soal
+            soal = new List<Soal>();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+    private Soal newSoal = new Soal
+        {
+            Id = 0,
+            Title = string.Empty,
+            Description = string.Empty,
+            AccessorId = 0
+        };
+    private async Task TambahSoal()
+    {
+            /*
+            var soal = new
+            {
+            Id = 0,
+            Title = "string",
+            Description = "string",
+        AccessorId = 0
+        };
+
+        var response = await httpClient!.PostAsJsonAsync("http://localhost:5017/api/Soal", soal);
+        //Console.WriteLine(response.IsSuccessStatusCode);
+        if (response.IsSuccessStatusCode)
+            {
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        */
+
+        var response = await httpClient!.PostAsJsonAsync("http://localhost:5017/api/Soal", newSoal);
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            Console.WriteLine("Failed to add soal.");
+        }
+    }
+    private async Task DeleteSoal()
+    {
+        if (soalId > 0) // Ensure a valid ID is provided
+        {
+            var response = await httpClient!.DeleteAsync($"http://localhost:5017/api/Soal/{soalId}");
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Soal with ID {soalId} deleted successfully.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+            else
+            {
+                Console.WriteLine($"Failed to delete soal with ID {soalId}. Status: {response.StatusCode}");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Please enter a valid Soal ID.");
+        }
+    }
+}

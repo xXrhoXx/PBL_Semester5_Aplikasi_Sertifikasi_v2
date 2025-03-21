@@ -1,0 +1,192 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@using Models.Entities
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Account Monitoring</PageTitle>
+
+@if (accessors is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <h3>Add Accessor</h3>
+                    <form @onsubmit="CheckAndAddAccessor">
+                        <div class="mb-3">
+                            <label for="accessorName" class="form-label">Name</label>
+                            <input type="text" id="accessorName" class="form-control" @bind="newAccessor.Nama" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessorAddress" class="form-label">Address</label>
+                            <input type="text" id="accessorAddress" class="form-control" @bind="newAccessor.Alamat" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessorEmail" class="form-label">Email</label>
+                            <input type="email" id="accessorEmail" class="form-control" @bind="newAccessor.Email" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="accessorPassword" class="form-label">Password</label>
+                            <input type="password" id="accessorPassword" class="form-control" @bind="newAccessor.Password" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Accessor</button>
+                    </form>
+                </th>
+
+
+
+                <th>
+                    <h3 class="mt-5">Add Assessee</h3>
+                    <form @onsubmit="CheckAndAddAssessee">
+                        <div class="mb-3">
+                            <label for="assesseeName" class="form-label">Name</label>
+                            <input type="text" id="assesseeName" class="form-control" @bind="newAssessee.Nama" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="assesseeAddress" class="form-label">Address</label>
+                            <input type="text" id="assesseeAddress" class="form-control" @bind="newAssessee.Alamat" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="assesseeEmail" class="form-label">Email</label>
+                            <input type="email" id="assesseeEmail" class="form-control" @bind="newAssessee.Email" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="assesseePassword" class="form-label">Password</label>
+                            <input type="password" id="assesseePassword" class="form-control" @bind="newAssessee.Password" required />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Add Assessee</button>
+                    </form>
+                </th>
+            </tr>
+            <tr>
+                <th>Accessor</th>
+                <th>Accessed</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    @for (int i = 0; i < accessors.Count; i++)
+                    {
+                        <AccessorItemComponent index="i+1" accessorData="accessors[i]" />
+                    }
+                </td>
+                <td>
+                    @for (int i = 0; i < accesses.Count; i++)
+                    {
+                        <AccessedItemComponent index="i+1" assesseeData="accesses[i]" />
+                    }
+                </td>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    public List<Accessor> accessors = new List<Accessor>();
+    public List<Accessed> accesses = new List<Accessed>();
+
+    public Accessor newAccessor = new Accessor();
+    public Accessed newAssessee = new Accessed();
+
+    public HttpClient httpClient = new HttpClient();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var responseAccessor = await httpClient!.GetAsync($"http://localhost:5017/api/Accessor");
+        var responseAccessed = await httpClient!.GetAsync($"http://localhost:5017/api/Accessed");
+
+        if (responseAccessor.IsSuccessStatusCode && responseAccessed.IsSuccessStatusCode)
+        {
+            accessors = await responseAccessor.Content.ReadFromJsonAsync<List<Accessor>>();
+            accesses = await responseAccessed.Content.ReadFromJsonAsync<List<Accessed>>();
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {responseAccessor.StatusCode}, {responseAccessed.StatusCode}");
+            // Example: Show an error message to the user or set a default value for accessors
+            accessors = new List<Accessor>();
+            accesses = new List<Accessed>();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+    }
+
+
+    private async Task CheckAndAddAccessor()
+    {
+        var existingAccessor = await httpClient.GetFromJsonAsync<List<Accessed>>("http://localhost:5017/api/Accessor");
+        if (existingAccessor != null && !existingAccessor.Any(a => a.Nama == newAccessor.Nama || a.Email == newAccessor.Email))
+        {
+            await TambahAccessor();
+        }
+        else
+        {
+            Console.WriteLine("Name or email already exists for Accessor."); 
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Name or email already exists for Accessor.");
+        }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+    private async Task TambahAccessor()
+    {
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/Accessor", newAccessor);
+        if (response.IsSuccessStatusCode)
+        {
+            accessors.Add(newAccessor);
+            newAccessor = new Accessor(); // Reset the form
+        }
+        else
+        {
+            Console.WriteLine("Failed to add accessor.");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Failed to add accessor.");
+        }
+    }
+
+
+    private async Task CheckAndAddAssessee()
+    {
+        var existingAccesses = await httpClient.GetFromJsonAsync<List<Accessed>>("http://localhost:5017/api/Accessed");
+        if (existingAccesses != null && !existingAccesses.Any(a => a.Nama == newAssessee.Nama || a.Email == newAssessee.Email))
+        {
+            await TambahAssessee();
+        }
+        else
+        {
+            Console.WriteLine("Name or email already exists for Assessee.");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Name or email already exists for Assessee.");
+        }
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+    private async Task TambahAssessee()
+    {
+        var response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/Accessed", newAssessee);
+        if (response.IsSuccessStatusCode)
+        {
+            accesses.Add(newAssessee);
+            newAssessee = new Accessed(); // Reset the form
+        }
+        else
+        {
+            Console.WriteLine("Failed to add assessee.");
+            var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Failed to add assessee.");
+        }
+    }
+}

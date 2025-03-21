@@ -1,0 +1,325 @@
+﻿<!--page "/jawaban-item-component/{IdSoal:int}/{AccessorId:int}/{IdJadwal:int}"-->
+@page "/jawaban-item-component/{EncryptedParams}"
+@using Microsoft.AspNetCore.Components.Authorization
+@using PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp.Models.Entities
+@using Microsoft.AspNetCore.Authorization
+@using System.Security.Cryptography
+@using System.Text
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager;
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@if (pertanyaan is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>DAFTAR PERTANYAAN</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>
+                    <form @onsubmit="KirimJawaban">
+                        <td style="visibility: hidden">
+                            @{int index = 0;}
+                        </td>
+                            @foreach (var item in jawaban)
+                            {
+                                <tr>
+                                    <td style="width: 5%; text-align: center;">@(index + 1)</td>
+                                    <td style="width: 95%;">
+                                        <div>
+                                            @foreach (var line in pertanyaan[index].Text.Split('\n'))
+                                            {
+                                                @line<br/>
+                                            }
+                                            <!--p>@pertanyaan[index].Text</p-->
+                                            <div style="margin-top: 10px; padding: 10px; border-top: 1px solid #ccc;">
+                                                <label for="answerInput">Your Answer:</label>
+                                                <input 
+                                                    id="answerInput" 
+                                                    @bind="item.assessmentAnswer" 
+                                                    placeholder="Enter your answer" 
+                                                    style="width: 100%; margin-top: 5px;" 
+                                                    required
+                                                    />
+                                                <div style="margin-top: 10px;"/>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <td style="visibility: hidden">
+                                    @(index++)
+                                </td>
+                            }
+                            <div>
+                                <label for="fileInput" class="form-label">Choose a file:</label>
+                                <InputFile id="fileInput" OnChange="HandleFileSelected" />
+                            </div>
+
+                            <!--div style="margin-top: 10px;">
+                                <button @onclick="UploadFile" disabled="@(!isFileSelected)">Upload</button>
+                            </div-->
+
+                            <!--div style="margin-top: 10px;" hidden="@string.IsNullOrEmpty(message)">
+                                <p>@message</p>
+                            </div-->
+                        <button type="submit" class="btn btn-primary">Send Answers</button>
+                    </form>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code{
+    public static string DecryptParameters(string encryptedData, byte[] key)
+    {
+        var cipherBytes = Convert.FromBase64String(encryptedData);
+        using (var aes = Aes.Create())
+        {
+            aes.Key = key;
+
+            // Extract IV from the first 16 bytes
+            var iv = new byte[aes.BlockSize / 8];
+            Array.Copy(cipherBytes, iv, iv.Length);
+            aes.IV = iv;
+
+            // Decrypt the remaining bytes
+            using (var ms = new MemoryStream(cipherBytes.Skip(iv.Length).ToArray()))
+            {
+                var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+                using (var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                {
+                    using (var reader = new StreamReader(cs))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+            }
+        }
+    }
+    public static byte[] DeriveKey(string userId, int keySize = 256)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(userId));
+            return key.Take(keySize / 8).ToArray(); // Ensure correct size (e.g., 256 bits)
+        }
+    }
+}
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Parameter] public string EncryptedParams { get; set; }
+    public int IdSoal { get; set; }
+    public int AccessorId { get; set; }
+    public int IdJadwal { get; set; }
+
+    public List<Pertanyaan> pertanyaan = new List<Pertanyaan>();
+    public List<Jawaban> jawaban = new List<Jawaban>();
+
+    public HttpClient httpClient = new HttpClient();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        DecryptParams();
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/Pertanyaan/by-questions/{IdSoal}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            pertanyaan = await response.Content.ReadFromJsonAsync<List<Pertanyaan>>();
+
+            var authenticationState = await authenticationStateTask;
+            foreach (var item in pertanyaan)
+            {
+                var tempJawaban = new Jawaban
+                {
+                    id = 0,
+                    assessmentAnswer = "",
+                    accessedId = int.Parse(authenticationState.User.FindFirst("Id")?.Value),
+                    accessorId = AccessorId,
+                    questionsId = item.QuestionsId,
+                    questionId = item.Id,
+                    filePath = ""
+                };
+
+                jawaban.Add(tempJawaban);
+            }
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for pertanyaan
+            pertanyaan = new List<Pertanyaan>();
+            jawaban = new List<Jawaban>();
+        }
+    }
+
+    private async Task DecryptParams()
+    {
+        var authState = await authenticationStateTask;
+        var userId = authState.User.FindFirst("Id")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new InvalidOperationException("User ID is missing or user is not authenticated.");
+        }
+
+        var key = DeriveKey(userId);
+        var decodedString = Uri.UnescapeDataString(EncryptedParams);
+        var decryptedParams = DecryptParameters(decodedString, key);
+
+        var parts = decryptedParams.Split(':');
+        IdSoal = int.Parse(parts[0]);
+        AccessorId = int.Parse(parts[1]);
+        IdJadwal = int.Parse(parts[2]);
+    }
+
+    private async Task KirimJawaban()
+    {    
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to send the answers?");
+
+        if (confirmed)
+        {
+            foreach (var entry in selectedFiles)
+            {
+                int questionIndex = entry.Key;
+                IFormFile file = entry.Value;
+
+                var content = new MultipartFormDataContent();
+                content.Add(new StreamContent(file.OpenReadStream()), "file", file.FileName);
+
+                var uploadResponse = await httpClient.PostAsync("http://localhost:5017/api/Jawaban/upload-file", content);
+
+                if (uploadResponse.IsSuccessStatusCode)
+                {
+                    var filePath = await uploadResponse.Content.ReadAsStringAsync();
+                    jawaban[questionIndex].filePath = filePath;
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to upload file for question {questionIndex + 1}");
+                }
+            }
+
+
+            var response = new HttpResponseMessage();
+
+            var path = UploadFile();
+            foreach (var item in jawaban)
+            {
+                var tempJawaban = new Jawaban
+                    {
+                        id = 0,
+                        assessmentAnswer = item.assessmentAnswer,
+                        accessedId = item.accessedId,
+                        accessorId = item.accessorId,
+                        questionsId = item.questionsId,
+                        questionId = item.questionId,
+                        filePath = await path
+                };
+                response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/Jawaban", tempJawaban);
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                DeleteSchedule();
+                var confirmedSent = await JSRuntime.InvokeAsync<bool>("confirm", "the anwser's Successfully sent");
+                if (confirmedSent)
+                {
+                    NavigationManager.NavigateTo("/", forceLoad: true);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeAsync<bool>("confirm", "Failed to send answers." + errorContent);
+            }
+        }
+    }
+
+    private async Task DeleteSchedule()
+    {
+        // Call the Delete method if confirmed
+        var response = await httpClient.DeleteAsync($"http://localhost:5017/api/Jadwal/{IdJadwal}");
+        NavigationManager.NavigateTo("/", forceLoad: true); // Reload the page
+    }
+
+    private Dictionary<int, IFormFile> selectedFiles = new();
+
+    /*
+    private void HandleFileChange(ChangeEventArgs e, int index)
+        {
+        if (e.Value is not null && e.Value is IBrowserFile file)
+            {
+            // Save the selected file in a dictionary, mapping it to the question index
+            selectedFiles[index] = (IFormFile)file;
+    }
+    }
+    */
+    private IBrowserFile? selectedFile;
+    private string message = string.Empty;
+    private bool isFileSelected = false;
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        if (e.FileCount > 0)
+        {
+            selectedFile = e.File;
+            isFileSelected = true;
+            message = string.Empty;
+        }
+    }
+
+    private async Task<string> UploadFile()
+    {
+        string path = "";
+
+        if (selectedFile is null)
+        {
+            message = "No file selected.";
+            return path;
+        }
+
+        try
+        {
+            using var content = new MultipartFormDataContent();
+            var stream = selectedFile.OpenReadStream(maxAllowedSize: 1024 * 1024 * 10); // 10MB max
+            var fileContent = new StreamContent(stream);
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+
+            content.Add(fileContent, "file", selectedFile.Name);
+
+            var response = await httpClient.PostAsync("http://localhost:5017/api/Jawaban/upload-file", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                message = "File uploaded successfully.";
+                path = await response.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                message = $"File upload failed. Status: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isFileSelected = false;
+        }
+
+        return path;
+    }
+}

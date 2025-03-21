@@ -1,0 +1,194 @@
+﻿<!--page "/daftar-jawaban-peserta-assessi-item-component/{IdSoal:int}"-->
+@using Microsoft.AspNetCore.Authorization
+@using PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessorApp.Models.Entities
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager;
+@rendermode InteractiveServer
+@attribute [Authorize]
+
+@if (jawaban is not null)
+{
+    <tr>
+        <th>
+            <form @onsubmit="TambahJawabanTerverifikasi">
+                <template style="visibility: hidden">@{int index = 0;}</template>
+                
+                @foreach (var rekomendasiPeserta in soalJawabanRekomendasiPeserta)
+                {
+                    <tr>
+                        <td style="width: 5%; text-align: center;">@(index + 1)</td>
+                        <!--jawabanPeserta.assessmentAnswer<br /-->
+                        <td style="width: 70%;">
+                            @foreach (var line in rekomendasiPeserta.pertanyaan.text.Split('\n'))
+                            {
+                                <p>@line<br /></p>
+                            }
+                            <!--b> @rekomendasiPeserta.pertanyaan.text</b-->
+                            <br />
+                            <p><b>Jawaban asesi: </b> @rekomendasiPeserta.jawaban.assessmentAnswer</p>
+                            <label for="answerInput">Umpan balik untuk asesi:</label>
+                            <input id="answerInput"
+                                @bind="rekomendasiPeserta.jawabanTerverifikasi.Tanggapan"
+                                placeholder="Enter your answer"
+                                style="width: 100%; margin-top: 5px;"
+                                required />
+                        </td>
+                        <td style="width: 25%; text-align: center;">
+                            <b>Rekomendasi:</b>
+                            <input type="checkbox" 
+                                @onchange="@(e => 
+                                UpdateRekomendasi(
+                                    rekomendasiPeserta.jawabanTerverifikasi, 
+                                    (bool)e.Value)
+                                )"/>
+                            <!--InputCheckbox 
+                                @onchange="(e) => 
+                                UpdateRekomendasi(
+                                    rekomendasiPeserta.jawabanTerverifikasi, 
+                                    (bool)e.Value)" /-->
+                        </td>
+                        <template style="visibility: hidden">@(index++)</template>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </td>
+                </tr>
+            </form>
+        </th>
+    </tr>
+}
+
+@code{
+    private void UpdateRekomendasi(JawabanTerverifikasi jawabanTerverifikasi, bool isKompeten)
+    {
+        jawabanTerverifikasi.Rekomendasi = isKompeten ? "Kompeten" : "Belum Kompeten";
+    }
+}
+
+@code {
+    [Parameter]
+    public List<Pertanyaan> pertanyaan { get; set; } = new List<Pertanyaan>();
+
+    [Parameter]
+    public List<Jawaban> jawaban { get; set; } = new List<Jawaban>();
+
+    public List<SoalJawabanPeserta> soalJawabanRekomendasiPeserta = new List<SoalJawabanPeserta>();
+    public HttpClient httpClient = new HttpClient();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        foreach (var item in jawaban)
+        {
+            var tempSoalJawabanRekomendasi = new SoalJawabanPeserta
+                {
+                    jawaban = item,
+                    pertanyaan = new Pertanyaan(),
+                    jawabanTerverifikasi = new JawabanTerverifikasi()
+                };
+
+
+            var response = await httpClient!.GetAsync($"http://localhost:5017/api/Pertanyaan/by-id/{item.questionId}");
+            if (response.IsSuccessStatusCode)
+            {
+                tempSoalJawabanRekomendasi.pertanyaan = await response.Content.ReadFromJsonAsync<Pertanyaan>();
+            }
+
+            tempSoalJawabanRekomendasi.jawabanTerverifikasi = new JawabanTerverifikasi
+                {
+                    id = 0,
+                    Rekomendasi = "Belum Kompeten",
+                    Tanggapan = "",
+                    question = tempSoalJawabanRekomendasi.pertanyaan.text,
+                    answer = item.assessmentAnswer,
+                    accessedId = item.accessedId,
+                    accessorId = item.accessorId,
+                    questionsId = item.questionsId,
+                    AssessmentSessionId = 0,
+                    filePath = item.filePath
+                };
+
+            soalJawabanRekomendasiPeserta.Add(tempSoalJawabanRekomendasi);
+        }
+    }
+
+    private async Task TambahJawabanTerverifikasi()
+    {
+        foreach (var item in soalJawabanRekomendasiPeserta)
+        {
+            Console.WriteLine(item.jawabanTerverifikasi.Rekomendasi);
+        }
+
+        var response = new HttpResponseMessage();
+
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to send the verifications?");
+
+        if (confirmed)
+        {
+            var newAssessmentSession = new AssessmentSession
+            {
+                AssessmentSessionId = 0
+            };
+            await httpClient.PostAsJsonAsync($"http://localhost:5017/api/AssessmentSession", newAssessmentSession);
+
+            //int latestAssessmentSessionId = assessmentSessionId.Max(item => item.AssessmentSessionId);
+            var latestAssessmentSessionId = await httpClient.GetFromJsonAsync<int>($"http://localhost:5017/api/AssessmentSession/max-id");
+
+            foreach (var item in soalJawabanRekomendasiPeserta)
+            {
+                var tempRekomendasi = new JawabanTerverifikasi
+                    {
+                        id = 0,
+                        Rekomendasi = item.jawabanTerverifikasi.Rekomendasi,
+                        Tanggapan = item.jawabanTerverifikasi.Tanggapan,
+                        question = item.pertanyaan.text,
+                        answer = item.jawaban.assessmentAnswer,
+                        accessedId = item.jawaban.accessedId,
+                        accessorId = item.jawaban.accessorId,
+                        questionsId = item.jawaban.questionsId,
+                        AssessmentSessionId = latestAssessmentSessionId,
+                        filePath = item.jawaban.filePath
+                    };
+
+                response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/JawabanTerverifikasi", tempRekomendasi);
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(errorContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    DeleteAnsweres(item.jawaban.id);
+                }
+            }
+
+            if (response.IsSuccessStatusCode)
+            {
+                var confirmedSent = await JSRuntime.InvokeAsync<bool>("confirm", "the assessment's Successfully sent");
+                if (confirmedSent)
+                {
+                    NavigationManager.NavigateTo("/", forceLoad: true);
+                }
+            }
+            else
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                await JSRuntime.InvokeAsync<bool>("confirm", "Failed to send assessment.\n" + errorContent);
+            }
+        }
+    }
+
+    private async Task DeleteAnsweres(int id)
+    {
+        var response = await httpClient.DeleteAsync($"http://localhost:5017/api/Jawaban/{id}");
+    }
+
+    public class SoalJawabanPeserta()
+    {
+        public Pertanyaan pertanyaan = new Pertanyaan();
+        public Jawaban jawaban = new Jawaban();
+        public JawabanTerverifikasi jawabanTerverifikasi = new JawabanTerverifikasi();
+    }
+}

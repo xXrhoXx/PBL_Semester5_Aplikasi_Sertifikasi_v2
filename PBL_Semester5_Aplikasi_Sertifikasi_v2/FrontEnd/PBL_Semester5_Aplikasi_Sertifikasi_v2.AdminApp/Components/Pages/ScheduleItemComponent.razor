@@ -1,0 +1,105 @@
+﻿@using PBL_Semester5_Aplikasi_Sertifikasi_v2.AdminApp.Models.Entities
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager;
+<!--h3>AccessorItemComponent</h3--->
+@if (scheduleData is not null)
+{
+    @if (!OnEdit)
+    {
+        <tr>
+            <th style="width: 10%;">No</th>
+            <th style="width: 10%;">ID</th>
+            <th style="width: 20%;">Tanggal Dan Waktu</th>
+            <th style="width: 20%;">Id Pertanyaan</th>
+            <th style="width: 20%;">Id Assessi</th>
+            <th style="width: 20%;">Id Assessor</th>
+        </tr>
+        <tr>
+            <td><b>@index.</b></td>
+            <td>@scheduleData.Id</td>
+            <td>@scheduleData.Date</td>
+            <td>@scheduleData.QuestionsId</td>
+            <td>@scheduleData.AccessedId</td>
+            <td>@scheduleData.AccessorID</td>
+            <td style="width: 25%; text-align: center;">
+                <button class="btn btn-primary" @onclick="EnableEdit">Enable Edit</button>
+                <button class="btn btn-danger" @onclick="Delete">Delete</button>
+            </td>
+        </tr>
+    }
+    else
+    {
+        <tr>
+            <th style="width: 10%;">Tanggal Dan Waktu</th>
+            <th style="width: 20%;">Id Pertanyaan</th>
+            <th style="width: 45%;">Id Assessi</th>
+            <th style="width: 25%;">Id Assessor</th>
+            <th style="width: 10%;"></th>
+        </tr>
+        <tr>
+            <td>
+                <input type="datetime-local" id="scheduleDate" class="form-control" @bind="scheduleData.Date" required />
+            </td>
+
+            <td>
+                <input type="text" id="questionId" class="form-control" @bind="scheduleData.QuestionsId" required />
+            </td>
+
+            <td>
+                <input type="text" id="accessedId" class="form-control" @bind="scheduleData.AccessedId" required />
+            </td>
+
+            <td>
+                <input type="text" id="accessorId" class="form-control" @bind="scheduleData.AccessorID" required />
+            </td>
+            <td>
+                <button class="btn btn-success" @onclick="Update">Save Changes</button>
+                <button class="btn btn-secondary" @onclick="DisableEdit">Cancel</button>
+            </td>
+        </tr>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public int index { get; set; }
+
+    [Parameter]
+    public AssessmentSchedule scheduleData { get; set; }
+
+    [Parameter]
+    public bool OnEdit { get; set; } = false;
+
+    public HttpClient httpClient = new HttpClient();
+
+
+    private async Task EnableEdit()
+    {
+        OnEdit = true;
+    }
+
+    private async Task DisableEdit()
+    {
+        OnEdit = false;
+    }
+
+    private async Task Update()
+    {
+        var response = await httpClient!.PutAsJsonAsync<AssessmentSchedule>($"http://localhost:5017/api/Jadwal", scheduleData);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Reload the page
+    }
+
+    private async Task Delete()
+    {
+        // Trigger a JavaScript confirmation dialog
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this item?");
+
+        if (confirmed)
+        {
+            // Call the Delete method if confirmed
+            var response = await httpClient.DeleteAsync($"http://localhost:5017/api/Jadwal/{scheduleData.Id}");
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Reload the page
+        }
+    }
+}

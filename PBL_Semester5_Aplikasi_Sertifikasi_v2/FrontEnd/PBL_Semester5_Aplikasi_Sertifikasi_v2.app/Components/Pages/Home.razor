@@ -1,0 +1,96 @@
+﻿@page "/"
+<!--using PBL_Semester5_Aplikasi_Sertifikasi_v2.app.Data-->
+<!--inject ISessionStorageService sessionStorage-->
+@using NetcodeHub.Packages.Extensions.LocalStorage;
+@using NetcodeHub.Packages.Extensions.SessionStorage;
+@inject ILocalStorageService localStorageService;
+@inject ISessionStorageService sessionStorageService;
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<!--
+<button class="btn btn-primary" @onclick="SaveName">add item to session</button>
+<input class="form-control" type="text" placeholder="type session value" style="width:200px;" @bind="name"/>
+<span>value: </span> @nameSession
+<span>item: </span> @itemSession
+<button class="btn btn-primary" @onclick="RemoveName">remove item from session</button>
+<button class="btn btn-primary" @onclick="ClearSessionStorage">clear session</button>
+-->
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bolder">Welcome to <br /><span class="text-black">ARISE</span></h2>
+        <p>(Assessment and Reporting Intelligent System for Efficiency)</p>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+                    <NotAuthorized>
+                        <span>You are not logged in. Please <a class="fw-bolder" href="/login">click here</a> to login.</span>
+                    </NotAuthorized>
+                    <Authorized>
+                        <span>Logged in as <b>@context.User.Identity.Name</b>. <a class="fw-bolder" href="/logout">Click here</a> to Logout</span>
+                    </Authorized>
+                </Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code{
+    string nameSession { get; set; }
+    int itemSession { get; set; }
+    string name { get; set; }
+
+    /*
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+        if (firstRender)
+            {
+            await GetNameFromSessionStorage();
+            await GetSessionStorageLength();
+
+            sessionStorage.changed += (sender, e) =>
+                {
+                Console.WriteLine($"key={e.key}, old value={e.oldValue}, new value={e.newValue}");
+            };
+            StateHasChanged();
+    }
+    }
+    async Task SaveName()
+        {
+        await sessionStorage.SetItemAsync("name", name);
+        await GetNameFromSessionStorage();
+        await GetSessionStorageLength();
+
+    name = "";
+    }
+    async Task RemoveName()
+        {
+        await sessionStorage.RemoveItemAsync("name");
+        await GetNameFromSessionStorage();
+        await GetSessionStorageLength();
+    }
+    async Task ClearSessionStorage()
+        {
+        await sessionStorage.ClearAsync();
+        await GetNameFromSessionStorage();
+        await GetSessionStorageLength();
+    }
+    async Task GetNameFromSessionStorage()
+        {
+        nameSession = await sessionStorage.GetItemAsync<string>("name");
+        if (string.IsNullOrEmpty(nameSession))
+            {
+            nameSession = "nothing in session";
+    }
+    }
+    async Task GetSessionStorageLength()
+        {
+        Console.WriteLine(await sessionStorage.LengthAsync());
+        itemSession = await sessionStorage.LengthAsync();
+    }
+    */
+}

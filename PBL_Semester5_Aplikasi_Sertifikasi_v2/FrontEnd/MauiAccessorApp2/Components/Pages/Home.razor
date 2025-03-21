@@ -1,0 +1,53 @@
+﻿@page "/"
+@using MauiAccessorApp2.Models.Entities
+@using MauiAccessorApp2.Models.ViewModels
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+<PageTitle>Home</PageTitle>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bolder">Welcome to <br /><span class="text-black">ARISE</span></h2>
+        <p>(Assessment and Reporting Intelligent System for Efficiency)</p>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+                    <NotAuthorized>
+                        <span>You are not logged in. Please <a class="fw-bolder" href="/login">click here</a> to login.</span>
+                        @foreach(var item in accessors)
+                        {
+                        <p>@item.Nama</p><br />
+                        }
+                    </NotAuthorized>
+                    <Authorized>
+                        <span>Logged in as <b>@context?.User?.Identity?.Name</b>. <a class="fw-bolder" href="/logout">Click here</a> to Logout</span>
+                    </Authorized>
+                </Microsoft.AspNetCore.Components.Authorization.AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public HttpClient? httpClient { get; set; } = new HttpClient();
+
+    [SupplyParameterFromForm]
+    public LoginViewModel loginModel { get; set; } = new();
+
+    private string? errorMessage;
+
+    public List<Accessor> accessors = new List<Accessor>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        // Make the POST request to the API
+
+        accessors = await httpClient!.GetFromJsonAsync<List<Accessor>>($"http://localhost:5017/api/Accessor");
+    }
+}

@@ -1,0 +1,81 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using PBL_Semester5_Aplikasi_Sertifikasi_v2.AccessedApp.Models.Entities
+@inject NavigationManager NavigationManager;
+
+@if (pertanyaan is not null)
+{
+
+
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    [Parameter]
+    public int index { get; set; }
+    [Parameter]
+    public Pertanyaan pertanyaan { get; set; }
+    [Parameter]
+    public int accessorId { get; set; }
+
+    public HttpClient httpClient = new HttpClient();
+
+    private Jawaban jawaban = new();
+
+    private async Task PostJawaban()
+    {
+        var authenticationState = await authenticationStateTask;
+        try
+        {
+            jawaban.questionsId = pertanyaan.QuestionsId;
+            jawaban.questionId = pertanyaan.Id;
+            jawaban.accessorId = accessorId;
+            if(int.TryParse(authenticationState.User.FindFirst("Id")?.Value, out int accessedId))
+            {
+                jawaban.accessedId = accessedId;
+            }
+
+            var response = await httpClient.PostAsJsonAsync("http://localhost:5017/api/Jawaban", jawaban);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Jawaban successfully posted.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Refresh component
+            }
+            else
+            {
+                Console.WriteLine($"Failed to post Jawaban: {response.ReasonPhrase}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+    }
+
+    private async Task EditJawaban()
+    {
+        var response = await httpClient!.PutAsJsonAsync<Jawaban>($"http://localhost:5017/api/Jawaban", jawaban);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Reload the page
+        /*try
+        {
+            // Ensure `jawaban.Id` is set with the existing Jawaban's ID before calling this
+            var response = await httpClient.PutAsJsonAsync($"http://localhost:5017/api/Jawaban/{jawaban.Id}", jawaban);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Console.WriteLine("Jawaban successfully edited.");
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true); // Refresh component
+            }
+            else
+            {
+                Console.WriteLine($"Failed to edit Jawaban: {response.ReasonPhrase}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }*/
+    }
+}

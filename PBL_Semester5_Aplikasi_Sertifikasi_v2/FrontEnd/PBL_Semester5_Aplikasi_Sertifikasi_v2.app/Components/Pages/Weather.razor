@@ -1,0 +1,65 @@
+﻿@page "/weather"
+@rendermode InteractiveServer
+<!--attribute [StreamRendering]-->
+
+<PageTitle>Weather</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <button class="btn btn-primary" @onclick="FetchData">get data</button>
+        <!-- <button class="btn btn-primary" @onclick="PostData">post data</button>-->
+        @if (soal != null && soal.Count() > 0)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Judul</th>
+                        <th>Deskripsi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in soal)
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.Title</td>
+                            <td>@item.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No data available</p>
+        }
+    </Authorized>
+</AuthorizeView>
+
+@using Models.Entities;
+@using Microsoft.AspNetCore.Components.Authorization
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    public List<Soal> soal;
+    public HttpClient httpClient = new HttpClient();
+    public int accessorId;
+
+    public async Task FetchData()
+    {
+        try
+        {
+            var authenticationState = await authenticationStateTask;
+            var user = authenticationState.User;
+            accessorId = int.Parse(user.Identity.Name);
+            // Fetch the list of data
+            soal = await httpClient.GetFromJsonAsync<List<Soal>>($"http://localhost:5017/api/Soal/by-accessor/{accessorId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error fetching data: {ex.Message}");
+        }
+    }
+}

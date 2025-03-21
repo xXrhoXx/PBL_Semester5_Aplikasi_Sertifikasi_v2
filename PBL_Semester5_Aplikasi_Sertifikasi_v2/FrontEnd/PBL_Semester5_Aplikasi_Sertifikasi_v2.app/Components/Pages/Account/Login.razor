@@ -1,0 +1,136 @@
+﻿@page "/login"
+
+<h3>Login</h3>
+<button @onclick="NavigateToAnotherPage">Go to Another Page</button>
+<div class="row">
+    <div class="col offset-lg-4 pt-4 pb-4 border">
+        <EditForm Model="@model" OnValidSubmit="Authenticate" FormName="LoginForm">
+            <DataAnnotationsValidator/>
+            <div class="mb-3 text-black-center flex-column">
+                <img src="#" style="max-height:5rem" />
+                <h3>LOGIN</h3>
+            </div>
+            <div class="mb-3">
+                <label>User Name</label>
+                <InputText @bind-Value="model.Username" class="from-control" placeholder="Username"/>
+                <ValidationMessage For="() => model.Username" />
+            </div>            
+            <!-- Dropdown for Accessed and Accessor -->
+            <div class="mb-3">
+                <label>Access Type</label>
+                <InputSelect @bind-Value="role" class="form-control">
+                    <option value="">Select Access Type</option>
+                    <option value="Accessor">Accessor</option>
+                    <option value="Accessed">Accessed</option>
+                </InputSelect>
+                <ValidationMessage For="() => role" />
+            </div>
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="model.Email" class="from-control" placeholder="Email" />
+                <ValidationMessage For="() => model.Email" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText @bind-Value="model.Password" class="from-control" placeholder="Password" />
+                <ValidationMessage For="() => model.Password" />
+            </div>
+            <div class="mb-3 text-center">
+                <span class="text-danger">@errorMessage</span>
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Authorization
+@using Models.ViewModels;
+@using Models.Entities;
+@using Data;
+@using System.Security.Claims
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.Authentication;
+@using Microsoft.AspNetCore.Http;
+@using Microsoft.AspNetCore.Identity;
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager navigationManager;
+@inject AuthenticationStateProvider authStateProvider;
+@code {
+
+    [CascadingParameter]
+    public HttpContext? httpContext { get; set; }
+
+    [CascadingParameter]
+    public HttpClient? httpClient { get; set; } = new HttpClient();
+
+    [SupplyParameterFromForm]
+    public LoginViewModel model { get; set; } = new();
+
+    [SupplyParameterFromForm]
+    [Required(ErrorMessage = "Role is required.")]
+    [RegularExpression("^(Accessor|Accessed)$", ErrorMessage = "Role must be either 'Accessor' or 'Accessed'.")]
+    public string? role { get; set; }
+
+    private string? errorMessage;
+    private void NavigateToAnotherPage()
+    {
+        navigationManager.NavigateTo("/");
+    }
+    private async Task Authenticate()
+    {
+        // Construct the request body from the login model
+        var loginRequest = new
+        {
+            username = model.Username,
+            email = model.Email,
+            password = model.Password
+        };
+
+        if (role == null || role == "") return;
+        // Make the POST request to the API
+        var response = await httpClient!.PostAsJsonAsync($"http://localhost:5017/api/{role}/validate", loginRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            // Successful authentication (e.g., you can set a token or redirect)
+            Accessor accessor = await response.Content.ReadFromJsonAsync<Accessor>();
+
+            // Example: If authentication is successful, redirect to a dashboard or store token
+            // Example: Store token or user details (optional)
+            // NavigationManager.NavigateTo("/dashboard");
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, accessor.Id.ToString()),
+                new Claim(ClaimTypes.Role, role),
+                new Claim("Id", accessor.Id.ToString())
+            };
+
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await httpContext.SignInAsync(principal);
+
+
+
+            navigationManager.NavigateTo("/");
+        }
+        else
+        {
+            // If authentication fails, show the error message from the API
+            errorMessage = "Invalid username, email, or password.";
+        }
+        /*
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            // Handle any errors in making the request (e.g., network issues)
+            errorMessage = $"An error occurred: {ex.Message}";
+        }*/
+    }
+}

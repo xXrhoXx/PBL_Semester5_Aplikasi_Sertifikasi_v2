@@ -1,0 +1,122 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using MauiAccessorApp.Models.Authentication
+@using MauiAccessorApp.Models.ViewModels
+@using Models.Entities;
+@inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider authenticationStateProvider
+
+<PageTitle>Login</PageTitle>
+
+<h3>Login</h3>
+
+<div class="container-fluid">
+    <div class="row vh-100">
+        <div class="col-md-6 d-none d-md-flex"></div>
+        <div class="col-md-6 bg-light">
+            <div class="d-flex align-items-center py-5">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-lg-10 col-xl-7 mx-auto">
+                            <h3 class="display-4 mb-3">Welcome</h3>
+                            <p class="text-muted mb-4">enter your accessor Credentials</p>
+
+                            @if(!string.IsNullOrEmpty(errorMessage))
+                            {
+                                <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                                    <i class="bi flex-shrink-0 me-2"></i>
+                                    <div>
+                                        @errorMessage
+                                    </div>
+                                </div>
+                            }
+                            
+                            <EditForm Model="loginModel" FormName="LoginForm" OnValidSubmit="Authenticate">
+                                <!--div class="mb-3 text-center">
+                                    <img src="#" alt="Logo" style="max-height:5rem" />
+                                    <h3>LOGIN</h3>
+                                </!--div-->
+
+                                <div class="mb-3">
+                                    <label>Username</label>
+                                    <InputText @bind-Value="loginModel.Username" class="form-control" placeholder="Username" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Email" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label>Password</label>
+                                    <InputText @bind-Value="loginModel.Password" class="form-control" placeholder="Password" type="password" />
+                                </div>
+
+                                <div class="mb-3 text-center text-danger">
+                                    @errorMessage
+                                </div>
+
+                                <div class="mb-3 d-grid gap-2">
+                                    <button type="submit" class="btn btn-primary">Login</button>
+                                </div>
+                            </EditForm>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter]
+    public HttpClient? httpClient { get; set; } = new HttpClient();
+
+    [SupplyParameterFromForm]
+    public LoginViewModel loginModel { get; set; } = new();
+
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private async Task Authenticate()
+    {
+        var loginRequest = new
+        {
+            username = loginModel.Username,
+            email = loginModel.Email,
+            password = loginModel.Password
+        };
+
+        // Make the POST request to the API
+        var response = await httpClient!.PostAsJsonAsync($"http://localhost:5017/api/Accessor/validate", loginRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            // Successful authentication (e.g., you can set a token or redirect)
+            Accessor accessor = await response.Content.ReadFromJsonAsync<Accessor>();
+
+            //await localStorageService.SaveAsStringAsync("name", accessor.Nama);
+            //await localStorageService.SaveAsStringAsync("email", accessor.Email);
+            //await localStorageService.SaveAsStringAsync("id", accessor.Id.ToString());
+
+            // Mark the user as authenticated
+            var customAuthenticationStateProvider = (CustomAuthenticationStateProvider)authenticationStateProvider;
+            await customAuthenticationStateProvider.UpdateAuthenticationState(
+                new UserSession(accessor.Nama, accessor.Email, accessor.Id), true);
+
+
+            // Example: If authentication is successful, redirect to a dashboard or store token
+            // Example: Store token or user details (optional)
+            NavigationManager.NavigateTo("/", true);
+        }
+        else
+        {
+            // If authentication fails, show the error message from the API
+            errorMessage = "Invalid username, email, or password.";
+        }
+    }
+}

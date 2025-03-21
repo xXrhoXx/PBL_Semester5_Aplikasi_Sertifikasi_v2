@@ -1,0 +1,197 @@
+﻿@page "/counter"
+<!--rendermode InteractiveServer-->
+@using Models.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using System.Security.Cryptography;
+@using System.Text
+@inject IJSRuntime JSRuntime;
+@inject NavigationManager NavigationManager;
+@attribute [Authorize]
+
+<PageTitle>Assessment</PageTitle>
+
+<h1>Assessment Questions</h1>
+
+@if (soal != null && soal.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+        @*<div style="visibility: hidden">@{int i = 0;}</div>
+            @foreach (var item in soal)
+            {
+                <tr>
+                    <td>@item.Id</td>
+                    <td>@item.Title</td>
+                    <td>@item.Description</td>
+                    <!--a class="fw-bolder" href="/jawaban-item-component/@item.Id/@item.AccessorId/@schedules[i].Id">press to Answer</a-->
+                    <td>
+                        <!--a class="fw-bolder" href="NavigateToJawabanItemComponent(item.Id, item.AccessorId, schedules[i].Id)">press to Answer</a-->
+                        <a class="fw-bolder" href="#" @onclick="() => NavigateToJawabanItemComponent(item.Id, item.AccessorId, schedules[i].Id)">
+                            Press to Answer
+                        </a>
+                    </td>
+                </tr>
+                <div style="visibility: hidden">
+                    @{
+                        Console.WriteLine(i);
+                        i++;
+                    }
+                </div>
+        }*@
+            @for (int i = 0; i < soal.Count; i++)
+            {
+                <tr>
+                    <td>@soal[i].Id</td>
+                    <td>@soal[i].Title</td>
+                    <td>@soal[i].Description</td>
+                    <td>
+                        <a class="fw-bolder" href="@GenerateUrl(soal[i].Id, soal[i].AccessorId, schedules[i].Id)">
+                            Press to Answer
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No data available</p>
+}
+
+@code {
+    public static string CombineParams(int IdSoal, int AccessorId, int IdJadwal)
+    {
+        return $"{IdSoal}:{AccessorId}:{IdJadwal}";
+    }
+    public static byte[] DeriveKey(string userId, int keySize = 256)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var key = sha256.ComputeHash(Encoding.UTF8.GetBytes(userId));
+            return key.Take(keySize / 8).ToArray(); // Ensure correct size (e.g., 256 bits)
+        }
+    }
+    public static string EncryptParameters(string data, byte[] key)
+    {
+        using (var aes = Aes.Create())
+        {
+            aes.Key = key;
+            aes.GenerateIV(); // Generate a random IV
+
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            using (var ms = new MemoryStream())
+            {
+                ms.Write(aes.IV, 0, aes.IV.Length); // Prepend IV to the ciphertext
+                using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                {
+                    var bytes = Encoding.UTF8.GetBytes(data);
+                    cs.Write(bytes, 0, bytes.Length);
+                }
+                return Convert.ToBase64String(ms.ToArray());
+            }
+        }
+    }
+}
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+    public HttpClient httpClient = new HttpClient();
+
+    public List<Soal> soal = new List<Soal>();
+    public List<AssessmentSchedule> schedules = new List<AssessmentSchedule>();
+
+    public string? errorMessage;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var response = await httpClient!.GetAsync($"http://localhost:5017/api/Jadwal");
+
+        if (response.IsSuccessStatusCode)
+        {
+            schedules = await response.Content.ReadFromJsonAsync<List<AssessmentSchedule>>();
+
+            foreach (var item in schedules)
+            {
+                await TampilkanSoalBerdasarkanJadwal(item);
+            }
+        }
+        else
+        {
+            // Handle the case where the response is not successful
+            // You can log the error, display a message to the user, or any other logic you need.
+            Console.WriteLine($"Error: {response.StatusCode}");
+            // Example: Show an error message to the user or set a default value for pertanyaan
+            schedules = new List<AssessmentSchedule>();
+        }
+    }
+
+    private async Task TampilkanSoalBerdasarkanJadwal(AssessmentSchedule jadwalObject)
+    {
+        var authenticationState = await authenticationStateTask;
+
+        if (
+            jadwalObject.AccessedId.ToString() == authenticationState.User.FindFirst("Id")?.Value && 
+            DateTime.Now >= jadwalObject.Date)
+        {
+            var response = await httpClient!.GetAsync($"http://localhost:5017/api/Soal");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var soalResponse = await response.Content.ReadFromJsonAsync<List<Soal>>();
+
+                foreach (var item in soalResponse)
+                {
+                    if (item.Id == jadwalObject.QuestionsId)
+                    {
+                        soal.Add(item);
+                    }
+                }
+            }
+        }
+    }
+    private async Task NavigateToJawabanItemComponent(int IdSoal, int AccessorId, int IdJadwal)
+    {
+        var authState = await authenticationStateTask;
+        var userId = authState.User.FindFirst("Id")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new InvalidOperationException("User ID is missing or user is not authenticated.");
+        }
+
+        var key = DeriveKey(userId);
+        var combinedParams = $"{IdSoal}:{AccessorId}:{IdJadwal}";
+        var encryptedParams = EncryptParameters(combinedParams, key);
+
+        NavigationManager.NavigateTo($"/jawaban-item-component/{Uri.EscapeDataString(encryptedParams)}");
+    }
+    private string GenerateUrl(int idSoal, int accessorId, int idJadwal)
+    {
+        var authState = authenticationStateTask.Result;
+        var userId = authState.User.FindFirst("Id")?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new InvalidOperationException("User ID is missing or user is not authenticated.");
+        }
+
+        var key = DeriveKey(userId);
+        var combinedParams = $"{idSoal}:{accessorId}:{idJadwal}";
+        var encryptedParams = EncryptParameters(combinedParams, key);
+
+        return $"/jawaban-item-component/{Uri.EscapeDataString(encryptedParams)}";
+    }
+}

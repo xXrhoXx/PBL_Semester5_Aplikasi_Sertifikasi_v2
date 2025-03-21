@@ -1,0 +1,192 @@
+﻿@page "/login"
+<!--rendermode InteractiveServer //HARD NOTE TO SELF: do NOT use interactive server if you want your identity to work -->
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using Microsoft.AspNetCore.Components.Forms
+@using Models.Entities;
+@using Models.ViewModels
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using BlazorCaptcha
+@inject NavigationManager NavigationManager;
+@inject IConfiguration configuration
+@{
+    var siteKey = configuration["ReCaptchaSettings.SiteKey"];
+}
+
+<h3>Login</h3>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+<div class="row">
+    <div class="col offset-lg-4 pt-4 pb-4 border">
+        <EditForm Model="@loginModel" OnValidSubmit="Authenticate" FormName="LoginForm">
+            <DataAnnotationsValidator />
+            <div class="mb-3 text-center">
+                <img src="#" alt="Logo" style="max-height:5rem" />
+                <h3>LOGIN</h3>
+            </div>
+
+            <div class="mb-3">
+                <label>Username</label>
+                <InputText @bind-Value="loginModel.Username" class="form-control" placeholder="Username" />
+                <ValidationMessage For="() => loginModel.Username" />
+            </div>
+
+            <div class="mb-3">
+                <label>Email</label>
+                <InputText @bind-Value="loginModel.Email" class="form-control" placeholder="Email" />
+                <ValidationMessage For="() => loginModel.Email" />
+            </div>
+
+            <div class="mb-3">
+                <label>Password</label>
+                <InputText @bind-Value="loginModel.Password" class="form-control" placeholder="Password" type="password" />
+                <ValidationMessage For="() => loginModel.Password" />
+            </div>
+
+            <div class="mb-3 text-center">
+                <div class="g-recaptcha" data-sitekey="6LejCLMqAAAAAAOrlrrQmkPmrAcRNlWsIsBBfeLh"></div>
+            </div>
+
+            <div class="mb-3 text-center text-danger">
+                @errorMessage
+            </div>
+
+            <div class="mb-3 d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+<!--button class="btn btn-primary m-2" @onclick="SetData">Set Data</!button-->
+@code {
+    // Login Model
+    [CascadingParameter]
+    public HttpContext? httpContext { get; set; }
+
+    [CascadingParameter]
+    public HttpClient? httpClient { get; set; } = new HttpClient();
+
+    [SupplyParameterFromForm]
+    public LoginViewModel loginModel { get; set; } = new();
+
+    private string? errorMessage;
+    private string captchaResponse = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (httpContext.User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("/", true);
+        }
+    }
+
+    /*private async Task Authenticate()
+    {
+        var loginRequest = new
+        {
+            username = loginModel.Username,
+            email = loginModel.Email,
+            password = loginModel.Password
+        };
+
+        // Make the POST request to the API
+        var response = await httpClient!.PostAsJsonAsync($"http://localhost:5017/api/Accessed/validate", loginRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            // Successful authentication (e.g., you can set a token or redirect)
+            Accessed admin = await response.Content.ReadFromJsonAsync<Accessed>();
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, admin.Nama),
+                new Claim("Id", admin.Id.ToString()),
+                new Claim(ClaimTypes.Email, admin.Email)
+            };
+
+            // Mark the user as authenticated
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            // Example: If authentication is successful, redirect to a dashboard or store token
+            // Example: Store token or user details (optional)
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            // If authentication fails, show the error message from the API
+            errorMessage = "Invalid username, email, or password.";
+        }
+    }*/
+    private async Task Authenticate()
+    {
+        var loginRequest = new
+        {
+            username = loginModel.Username,
+            email = loginModel.Email,
+            password = loginModel.Password
+        };
+
+        // Get the reCAPTCHA response token from the form
+        var recaptchaResponse = httpContext?.Request.Form["g-recaptcha-response"];
+        if (string.IsNullOrEmpty(recaptchaResponse))
+        {
+            errorMessage = "CAPTCHA validation failed. Please try again. null";
+            return;
+        }
+
+        // Validate the CAPTCHA with Google API
+        var recaptchaVerifyUrl = $"https://www.google.com/recaptcha/api/siteverify";
+        var recaptchaVerifyRequest = new
+        {
+            secret = "6LejCLMqAAAAANNfaOlze055_4WSpJQ1nytSRnnd",
+            response = recaptchaResponse
+        };
+
+        var recaptchaResponseResult = await httpClient!.PostAsJsonAsync(recaptchaVerifyUrl, recaptchaVerifyRequest);
+        var recaptchaVerificationResult = await recaptchaResponseResult.Content.ReadFromJsonAsync<RecaptchaVerificationResponse>();
+
+        /*if (!recaptchaVerificationResult?.Success ?? true)
+        {
+            errorMessage = "CAPTCHA validation failed. Please try again.";
+            return;
+        }*/
+
+        // Make the POST request to the API for login authentication
+        var response = await httpClient!.PostAsJsonAsync($"http://localhost:5017/api/Accessed/validate", loginRequest);
+        if (response.IsSuccessStatusCode)
+        {
+            Accessed accessed = await response.Content.ReadFromJsonAsync<Accessed>();
+
+            var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, accessed.Nama),
+            new Claim("Id", accessed.Id.ToString()),
+            new Claim(ClaimTypes.Email, accessed.Email)
+        };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Invalid username, email, or password.";
+        }
+    }
+
+    private class RecaptchaVerificationResponse
+    {
+        public bool Success { get; set; }
+        public DateTime ChallengeTs { get; set; }
+        public string Hostname { get; set; }
+        public IEnumerable<string> ErrorCodes { get; set; }
+    }
+}
