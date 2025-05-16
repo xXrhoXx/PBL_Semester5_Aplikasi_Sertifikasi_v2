@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "tasks": [
+    {
+      "taskLabel": "task-PBL_Semester5_Aplikasi_Sertifikasi_v2",
+      "appliesTo": "Api/PBL_Semester5_Aplikasi_Sertifikasi_v2.ApiClient/",
+      "type": "launch"
+    }
+  ]
+}
